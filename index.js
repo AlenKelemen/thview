@@ -1,18 +1,18 @@
 import { elt } from "./util";
 import moment from "moment";
 
-const header = elt("h1", {}, "Mjerenja na vodoopskrbnoj mreži");
+const header = elt("h1", {style:'margin-top:0;margin-left:1em'}, "Mjerenja na vodoopskrbnoj mreži");
 document.body.appendChild(header);
 const startDate = elt("input", { type: "datetime-local" });
 const deviceSelector = elt("select", {});
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
-const valuesSelector = elt("select", {});
+const valuesSelector = elt("select", {size:'20',style:'width:300px'});
 console.log(endDate.value);
 const fielset = elt(
   "fieldset",
-  {},
+  {style:'margin-left:1em'},
   elt("label", {}, "Odaberi uređaj"),
   deviceSelector,
   elt("label", {}, "Početni datum"),
@@ -34,8 +34,9 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
       if (i.device_id === 177) o.selected = true;
     }
   });
-const deviceSelectorChanged = (evt) => {
-  const deviceId = evt.target.value;
+
+const deviceSelectorChanged = () => {
+  const deviceId = deviceSelector.value;
   valuesSelector.length = 0;
   fetch(
     "https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId
@@ -44,10 +45,16 @@ const deviceSelectorChanged = (evt) => {
     .then((data) => {
       const startUnixDate = moment(startDate.value).unix();
       const endUnixDate = moment(endDate.value).unix();
-      console.log(startUnixDate);
       for (const i of data) {
-        console.log(i.date_part);
+        if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
+          const timeString = moment.unix(i.date_part).format('L LT')
+          const o = new Option(timeString + " => " + i.pressure);
+          valuesSelector.options.add(o);
+        }
       }
     });
 };
+
 deviceSelector.addEventListener("change", deviceSelectorChanged);
+startDate.addEventListener('change', deviceSelectorChanged);
+endDate.addEventListener('change', deviceSelectorChanged);
