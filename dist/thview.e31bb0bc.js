@@ -5844,7 +5844,9 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-var header = (0, _util.elt)("h1", {}, "Mjerenja na vodoopskrbnoj mreži");
+var header = (0, _util.elt)("h1", {
+  style: 'margin-top:0;margin-left:1rem'
+}, "Mjerenja na vodoopskrbnoj mreži");
 document.body.appendChild(header);
 var startDate = (0, _util.elt)("input", {
   type: "datetime-local"
@@ -5855,9 +5857,18 @@ var endDate = (0, _util.elt)("input", {
   type: "datetime-local"
 });
 endDate.value = (0, _moment.default)().format("YYYY-MM-DDTHH:mm");
-var valuesSelector = (0, _util.elt)("select", {});
-console.log(endDate.value);
-var fielset = (0, _util.elt)("fieldset", {}, (0, _util.elt)("label", {}, "Odaberi uređaj"), deviceSelector, (0, _util.elt)("label", {}, "Početni datum"), startDate, (0, _util.elt)("label", {}, "Završni datum"), endDate, (0, _util.elt)("label", {}, "Izmjereno"), valuesSelector);
+var pressure = (0, _util.elt)("select", {
+  size: '10',
+  style: 'width:300px'
+});
+var flow = (0, _util.elt)("select", {
+  size: '10',
+  style: 'width:300px'
+});
+var fielset = (0, _util.elt)("fieldset", {
+  style: 'margin-left:1em'
+}, (0, _util.elt)("label", {}, "Odaberi uređaj"), deviceSelector, (0, _util.elt)("label", {}, "Početni datum"), startDate, (0, _util.elt)("label", {}, "Završni datum"), endDate, (0, _util.elt)("label", {}, "Tlak bar"), pressure, //elt('button',{type:'submit',onclick=}, 'Preuzmi'),
+(0, _util.elt)("label", {}, "Protok l/s"), flow);
 var form = (0, _util.elt)("form", {}, fielset);
 document.body.appendChild(form);
 fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2").then(function (response) {
@@ -5871,24 +5882,26 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2").then(function 
       var i = _step.value;
       var o = new Option(i.device_name, i.device_id);
       deviceSelector.options.add(o);
-      if (i.device_id === 177) o.selected = true;
+      if (i.device_id === 161) o.selected = true;
     }
   } catch (err) {
     _iterator.e(err);
   } finally {
     _iterator.f();
   }
+
+  deviceSelectorChanged();
 });
 
-var deviceSelectorChanged = function deviceSelectorChanged(evt) {
-  var deviceId = evt.target.value;
-  valuesSelector.length = 0;
+var deviceSelectorChanged = function deviceSelectorChanged() {
+  var deviceId = deviceSelector.value;
+  pressure.length = 0;
   fetch("https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId).then(function (response) {
     return response.json();
   }).then(function (data) {
+    var report = 'Tlak bar\n';
     var startUnixDate = (0, _moment.default)(startDate.value).unix();
     var endUnixDate = (0, _moment.default)(endDate.value).unix();
-    console.log(startUnixDate);
 
     var _iterator2 = _createForOfIteratorHelper(data),
         _step2;
@@ -5896,17 +5909,56 @@ var deviceSelectorChanged = function deviceSelectorChanged(evt) {
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
         var i = _step2.value;
-        console.log(i.date_part);
+
+        if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
+          var timeString = _moment.default.unix(i.date_part).format('L LT');
+
+          var o = new Option(timeString + " => " + i.pressure);
+          pressure.options.add(o);
+          report = report + timeString + ";" + i.pressure + '\n';
+        }
       }
     } catch (err) {
       _iterator2.e(err);
     } finally {
       _iterator2.f();
     }
+
+    console.log(report);
+  });
+  flow.length = 0;
+  fetch("https://gis.edc.hr/imagisth/threport/flow_th?device_id=eq." + deviceId).then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    var report = 'Protok l/s\n';
+    var startUnixDate = (0, _moment.default)(startDate.value).unix();
+    var endUnixDate = (0, _moment.default)(endDate.value).unix();
+
+    var _iterator3 = _createForOfIteratorHelper(data),
+        _step3;
+
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var i = _step3.value;
+
+        if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
+          var timeString = _moment.default.unix(i.date_part).format('L LT');
+
+          var o = new Option(timeString + " => " + i.flow);
+          flow.options.add(o);
+        }
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
   });
 };
 
 deviceSelector.addEventListener("change", deviceSelectorChanged);
+startDate.addEventListener('change', deviceSelectorChanged);
+endDate.addEventListener('change', deviceSelectorChanged);
 },{"./util":"util.js","moment":"node_modules/moment/moment.js"}],"../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -5935,7 +5987,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50390" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52552" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

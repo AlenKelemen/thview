@@ -1,7 +1,7 @@
 import { elt } from "./util";
 import moment from "moment";
 
-const header = elt("h1", {style:'margin-top:0;margin-left:1em'}, "Mjerenja na vodoopskrbnoj mreži");
+const header = elt("h1", {style:'margin-top:0;margin-left:1rem'}, "Mjerenja na vodoopskrbnoj mreži");
 document.body.appendChild(header);
 const startDate = elt("input", { type: "datetime-local" });
 const deviceSelector = elt("select", {});
@@ -21,6 +21,7 @@ const fielset = elt(
   endDate,
   elt("label", {}, "Tlak bar"),
   pressure,
+  //elt('button',{type:'submit',onclick=}, 'Preuzmi'),
   elt("label", {}, "Protok l/s"),
   flow,
 );
@@ -46,6 +47,7 @@ const deviceSelectorChanged = () => {
   )
     .then((response) => response.json())
     .then((data) => {
+      let report = 'Tlak bar\n';
       const startUnixDate = moment(startDate.value).unix();
       const endUnixDate = moment(endDate.value).unix();
       for (const i of data) {
@@ -53,8 +55,10 @@ const deviceSelectorChanged = () => {
           const timeString = moment.unix(i.date_part).format('L LT')
           const o = new Option(timeString + " => " + i.pressure);
           pressure.options.add(o);
+          report = report + timeString + ";" + i.pressure + '\n'
         }
       }
+      console.log(report)
     });
     flow.length = 0;
     fetch(
@@ -62,6 +66,7 @@ const deviceSelectorChanged = () => {
     )
       .then((response) => response.json())
       .then((data) => {
+        let report = 'Protok l/s\n';
         const startUnixDate = moment(startDate.value).unix();
         const endUnixDate = moment(endDate.value).unix();
         for (const i of data) {
