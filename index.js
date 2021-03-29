@@ -8,8 +8,8 @@ const deviceSelector = elt("select", {});
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
-const valuesSelector = elt("select", {size:'20',style:'width:300px'});
-console.log(endDate.value);
+const pressure = elt("select", {size:'10',style:'width:300px'});
+const flow = elt("select", {size:'10',style:'width:300px'});
 const fielset = elt(
   "fieldset",
   {style:'margin-left:1em'},
@@ -19,8 +19,10 @@ const fielset = elt(
   startDate,
   elt("label", {}, "Završni datum"),
   endDate,
-  elt("label", {}, "Izmjereno"),
-  valuesSelector
+  elt("label", {}, "Tlak bar"),
+  pressure,
+  elt("label", {}, "Protok l/s"),
+  flow,
 );
 const form = elt("form", {}, fielset);
 document.body.appendChild(form);
@@ -31,13 +33,14 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
     for (const i of data) {
       const o = new Option(i.device_name, i.device_id);
       deviceSelector.options.add(o);
-      if (i.device_id === 177) o.selected = true;
+      if (i.device_id === 161) o.selected = true;
     }
+    deviceSelectorChanged()
   });
 
 const deviceSelectorChanged = () => {
   const deviceId = deviceSelector.value;
-  valuesSelector.length = 0;
+  pressure.length = 0;
   fetch(
     "https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId
   )
@@ -49,10 +52,26 @@ const deviceSelectorChanged = () => {
         if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
           const timeString = moment.unix(i.date_part).format('L LT')
           const o = new Option(timeString + " => " + i.pressure);
-          valuesSelector.options.add(o);
+          pressure.options.add(o);
         }
       }
     });
+    flow.length = 0;
+    fetch(
+      "https://gis.edc.hr/imagisth/threport/flow_th?device_id=eq." + deviceId
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        const startUnixDate = moment(startDate.value).unix();
+        const endUnixDate = moment(endDate.value).unix();
+        for (const i of data) {
+          if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
+            const timeString = moment.unix(i.date_part).format('L LT')
+            const o = new Option(timeString + " => " + i.flow);
+            flow.options.add(o);
+          }
+        }
+      });
 };
 
 deviceSelector.addEventListener("change", deviceSelectorChanged);
