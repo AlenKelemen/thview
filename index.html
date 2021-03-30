@@ -6,6 +6,27 @@
       href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css.min.css"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @media (max-width: 1024px) {
+        table thead {
+          display: table-header-group;
+          border-collapse:collapse;
+        }
+        table tr {
+          display: table-row;
+        }
+        table tr th{
+          display: table-cell;
+        }
+        table tr td {
+          display: table-cell;
+          border: solid;
+          border-width: 1px;
+          border-color: gray;
+        };
+        
+      }
+    </style>
   </head>
   <body>
     <script src="./index.js"></script>

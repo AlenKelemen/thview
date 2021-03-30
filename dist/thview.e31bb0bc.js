@@ -5865,14 +5865,15 @@ var flow = (0, _util.elt)("select", {
   size: "10",
   style: "width:300px"
 });
-var tblPressure = (0, _util.elt)("table", {}, (0, _util.elt)("thead", {}, (0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, "Vrijeme"), (0, _util.elt)("td", {}, "Tlak bar"))));
+var tbody = (0, _util.elt)("tbody", {});
+var tblPressure = (0, _util.elt)("table", {}, (0, _util.elt)("thead", {}, (0, _util.elt)("tr", {}, (0, _util.elt)("th", {}, "Vrijeme"), (0, _util.elt)("th", {}, "Tlak bar"))), tbody);
 var fielset = (0, _util.elt)("fieldset", {
   style: "margin-left:1em"
 }, (0, _util.elt)("label", {}, "Odaberi uređaj"), deviceSelector, (0, _util.elt)("label", {}, "Početni datum"), startDate, (0, _util.elt)("label", {}, "Završni datum"), endDate, (0, _util.elt)("label", {}, "Tlak bar"), pressure, //elt('button',{type:'submit',onclick=}, 'Preuzmi'),
-(0, _util.elt)("label", {}, "Protok l/s"), flow);
+(0, _util.elt)("label", {}, "Protok l/s"), flow, tblPressure);
 var form = (0, _util.elt)("form", {}, fielset);
-document.body.appendChild(form);
-document.body.appendChild(tblPressure);
+document.body.appendChild(form); //document.body.appendChild(tblPressure);
+
 fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2").then(function (response) {
   return response.json();
 }).then(function (data) {
@@ -5918,7 +5919,7 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
           var o = new Option(timeString + " => " + i.pressure);
           pressure.options.add(o);
           report = report + timeString + ";" + i.pressure + "\n";
-          tblPressure.appendChild((0, _util.elt)('tr', {}, (0, _util.elt)('td', {}, timeString), (0, _util.elt)('td', {}, i.pressure + '')));
+          tbody.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.pressure + "")));
         }
       }
     } catch (err) {
@@ -5990,7 +5991,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51314" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52876" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

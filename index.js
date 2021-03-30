@@ -15,14 +15,16 @@ endDate.value = moment().format("YYYY-MM-DDTHH:mm");
 const pressure = elt("select", { size: "10", style: "width:300px" });
 const flow = elt("select", { size: "10", style: "width:300px" });
 
+const tbody = elt("tbody", {});
 const tblPressure = elt(
   "table",
   {},
   elt(
     "thead",
     {},
-    elt("tr", {}, elt("td", {}, "Vrijeme"), elt("td", {}, "Tlak bar"))
-  )
+    elt("tr", {}, elt("th", {}, "Vrijeme"), elt("th", {}, "Tlak bar"))
+  ),
+  tbody
 );
 const fielset = elt(
   "fieldset",
@@ -38,11 +40,11 @@ const fielset = elt(
   //elt('button',{type:'submit',onclick=}, 'Preuzmi'),
   elt("label", {}, "Protok l/s"),
   flow,
-
+  tblPressure
 );
 const form = elt("form", {}, fielset);
 document.body.appendChild(form);
-document.body.appendChild(  tblPressure)
+//document.body.appendChild(tblPressure);
 fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
   .then((response) => response.json())
   .then((data) => {
@@ -71,7 +73,14 @@ const deviceSelectorChanged = () => {
           const o = new Option(timeString + " => " + i.pressure);
           pressure.options.add(o);
           report = report + timeString + ";" + i.pressure + "\n";
-          tblPressure.appendChild(elt('tr',{}, elt('td',{},timeString),elt('td',{},i.pressure + '')))
+          tbody.appendChild(
+            elt(
+              "tr",
+              {},
+              elt("td", {}, timeString),
+              elt("td", {}, i.pressure + "")
+            )
+          );
         }
       }
       console.log(report);
