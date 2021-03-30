@@ -5857,23 +5857,19 @@ var endDate = (0, _util.elt)("input", {
   type: "datetime-local"
 });
 endDate.value = (0, _moment.default)().format("YYYY-MM-DDTHH:mm");
-var pressure = (0, _util.elt)("select", {
-  size: "10",
-  style: "width:300px"
-});
-var flow = (0, _util.elt)("select", {
-  size: "10",
-  style: "width:300px"
-});
-var tbody = (0, _util.elt)("tbody", {});
-var tblPressure = (0, _util.elt)("table", {}, (0, _util.elt)("thead", {}, (0, _util.elt)("tr", {}, (0, _util.elt)("th", {}, "Vrijeme"), (0, _util.elt)("th", {}, "Tlak bar"))), tbody);
+var tbodyPressure = (0, _util.elt)("tbody", {});
+var tblPressure = (0, _util.elt)("table", {}, //suppress 100%
+(0, _util.elt)("thead", {}, (0, _util.elt)("tr", {}, (0, _util.elt)("th", {}, "Vrijeme"), (0, _util.elt)("th", {}, "Tlak bar"))), tbodyPressure);
+var tbodyFlow = (0, _util.elt)("tbody", {});
+var tblFlow = (0, _util.elt)("table", {
+  style: "width:unset"
+}, //suppress 100%
+(0, _util.elt)("thead", {}, (0, _util.elt)("tr", {}, (0, _util.elt)("th", {}, "Vrijeme"), (0, _util.elt)("th", {}, "Protok l/s"))), tbodyFlow);
 var fielset = (0, _util.elt)("fieldset", {
   style: "margin-left:1em"
-}, (0, _util.elt)("label", {}, "Odaberi uređaj"), deviceSelector, (0, _util.elt)("label", {}, "Početni datum"), startDate, (0, _util.elt)("label", {}, "Završni datum"), endDate, (0, _util.elt)("label", {}, "Tlak bar"), pressure, //elt('button',{type:'submit',onclick=}, 'Preuzmi'),
-(0, _util.elt)("label", {}, "Protok l/s"), flow, tblPressure);
+}, (0, _util.elt)("label", {}, "Odaberi uređaj"), deviceSelector, (0, _util.elt)("label", {}, "Početni datum"), startDate, (0, _util.elt)("label", {}, "Završni datum"), endDate, tblPressure, tblFlow);
 var form = (0, _util.elt)("form", {}, fielset);
-document.body.appendChild(form); //document.body.appendChild(tblPressure);
-
+document.body.appendChild(form);
 fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2").then(function (response) {
   return response.json();
 }).then(function (data) {
@@ -5898,11 +5894,11 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2").then(function 
 
 var deviceSelectorChanged = function deviceSelectorChanged() {
   var deviceId = deviceSelector.value;
-  pressure.length = 0;
   fetch("https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId).then(function (response) {
     return response.json();
   }).then(function (data) {
     var report = "Tlak bar\n";
+    tbodyPressure.innerHTML = "";
     var startUnixDate = (0, _moment.default)(startDate.value).unix();
     var endUnixDate = (0, _moment.default)(endDate.value).unix();
 
@@ -5916,10 +5912,8 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
         if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
           var timeString = _moment.default.unix(i.date_part).format("L LT");
 
-          var o = new Option(timeString + " => " + i.pressure);
-          pressure.options.add(o);
           report = report + timeString + ";" + i.pressure + "\n";
-          tbody.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.pressure + "")));
+          tbodyPressure.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.pressure + "")));
         }
       }
     } catch (err) {
@@ -5930,11 +5924,11 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
 
     console.log(report);
   });
-  flow.length = 0;
   fetch("https://gis.edc.hr/imagisth/threport/flow_th?device_id=eq." + deviceId).then(function (response) {
     return response.json();
   }).then(function (data) {
     var report = "Protok l/s\n";
+    tbodyFlow.innerHTML = "";
     var startUnixDate = (0, _moment.default)(startDate.value).unix();
     var endUnixDate = (0, _moment.default)(endDate.value).unix();
 
@@ -5948,8 +5942,7 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
         if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
           var timeString = _moment.default.unix(i.date_part).format("L LT");
 
-          var o = new Option(timeString + " => " + i.flow);
-          flow.options.add(o);
+          tbodyFlow.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.flow + "")));
         }
       }
     } catch (err) {
@@ -5991,7 +5984,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52876" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63840" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

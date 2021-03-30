@@ -12,19 +12,27 @@ const deviceSelector = elt("select", {});
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
-const pressure = elt("select", { size: "10", style: "width:300px" });
-const flow = elt("select", { size: "10", style: "width:300px" });
-
-const tbody = elt("tbody", {});
+const tbodyPressure = elt("tbody", {});
 const tblPressure = elt(
   "table",
-  {},
+  {}, //suppress 100%
   elt(
     "thead",
     {},
     elt("tr", {}, elt("th", {}, "Vrijeme"), elt("th", {}, "Tlak bar"))
   ),
-  tbody
+  tbodyPressure
+);
+const tbodyFlow = elt("tbody", {});
+const tblFlow = elt(
+  "table",
+  { style: "width:unset" }, //suppress 100%
+  elt(
+    "thead",
+    {},
+    elt("tr", {}, elt("th", {}, "Vrijeme"), elt("th", {}, "Protok l/s"))
+  ),
+  tbodyFlow
 );
 const fielset = elt(
   "fieldset",
@@ -35,16 +43,12 @@ const fielset = elt(
   startDate,
   elt("label", {}, "Završni datum"),
   endDate,
-  elt("label", {}, "Tlak bar"),
-  pressure,
-  //elt('button',{type:'submit',onclick=}, 'Preuzmi'),
-  elt("label", {}, "Protok l/s"),
-  flow,
-  tblPressure
+  tblPressure,
+  tblFlow
 );
 const form = elt("form", {}, fielset);
 document.body.appendChild(form);
-//document.body.appendChild(tblPressure);
+
 fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
   .then((response) => response.json())
   .then((data) => {
@@ -58,22 +62,20 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
 
 const deviceSelectorChanged = () => {
   const deviceId = deviceSelector.value;
-  pressure.length = 0;
   fetch(
     "https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId
   )
     .then((response) => response.json())
     .then((data) => {
       let report = "Tlak bar\n";
+      tbodyPressure.innerHTML = "";
       const startUnixDate = moment(startDate.value).unix();
       const endUnixDate = moment(endDate.value).unix();
       for (const i of data) {
         if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
           const timeString = moment.unix(i.date_part).format("L LT");
-          const o = new Option(timeString + " => " + i.pressure);
-          pressure.options.add(o);
           report = report + timeString + ";" + i.pressure + "\n";
-          tbody.appendChild(
+          tbodyPressure.appendChild(
             elt(
               "tr",
               {},
@@ -85,18 +87,19 @@ const deviceSelectorChanged = () => {
       }
       console.log(report);
     });
-  flow.length = 0;
   fetch("https://gis.edc.hr/imagisth/threport/flow_th?device_id=eq." + deviceId)
     .then((response) => response.json())
     .then((data) => {
       let report = "Protok l/s\n";
+      tbodyFlow.innerHTML = "";
       const startUnixDate = moment(startDate.value).unix();
       const endUnixDate = moment(endDate.value).unix();
       for (const i of data) {
         if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
           const timeString = moment.unix(i.date_part).format("L LT");
-          const o = new Option(timeString + " => " + i.flow);
-          flow.options.add(o);
+          tbodyFlow.appendChild(
+            elt("tr", {}, elt("td", {}, timeString), elt("td", {}, i.flow + ""))
+          );
         }
       }
     });
