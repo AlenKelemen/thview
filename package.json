@@ -13,5 +13,8 @@
   "license": "ISC",
   "dependencies": {
     "moment": "^2.29.1"
+  },
+  "devDependencies": {
+    "cssnano": "^4.1.10"
   }
 }
