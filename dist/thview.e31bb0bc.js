@@ -5893,14 +5893,7 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2").then(function 
 });
 
 var deviceSelectorChanged = function deviceSelectorChanged() {
-  var deviceId = deviceSelector.value; //
-
-  if (deviceId == 177) {
-    inventia();
-    return;
-  } //
-
-
+  var deviceId = deviceSelector.value;
   fetch("https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId).then(function (response) {
     return response.json();
   }).then(function (data) {
@@ -5962,40 +5955,7 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
 
 deviceSelector.addEventListener("change", deviceSelectorChanged);
 startDate.addEventListener("change", deviceSelectorChanged);
-endDate.addEventListener("change", deviceSelectorChanged); //Inventia MT testing https://gis.edc.hr/imagisth/threport/mt_flow_test
-
-function inventia() {
-  console.log("Inventia test");
-  fetch("https://gis.edc.hr/imagisth/threport/mt_flow_test").then(function (response) {
-    return response.json();
-  }).then(function (data) {
-    console.log(data);
-    tbodyPressure.innerHTML = "";
-    var report = "Protok l/s\n";
-    tbodyFlow.innerHTML = "";
-    var startUnixDate = (0, _moment.default)(startDate.value).unix();
-    var endUnixDate = (0, _moment.default)(endDate.value).unix();
-
-    var _iterator4 = _createForOfIteratorHelper(data),
-        _step4;
-
-    try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var i = _step4.value;
-
-        if (i.date >= startUnixDate && i.date <= endUnixDate) {
-          var timeString = _moment.default.unix(i.date).format("L LT");
-
-          tbodyFlow.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.flow + "")));
-        }
-      }
-    } catch (err) {
-      _iterator4.e(err);
-    } finally {
-      _iterator4.f();
-    }
-  });
-}
+endDate.addEventListener("change", deviceSelectorChanged);
 },{"./util":"util.js","moment":"node_modules/moment/moment.js"}],"../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -6024,7 +5984,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56035" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58955" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

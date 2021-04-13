@@ -62,12 +62,6 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
 
 const deviceSelectorChanged = () => {
   const deviceId = deviceSelector.value;
-  //
-  if (deviceId == 177) {
-    inventia();
-    return;
-  }
-  //
   fetch(
     "https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId
   )
@@ -115,27 +109,3 @@ deviceSelector.addEventListener("change", deviceSelectorChanged);
 startDate.addEventListener("change", deviceSelectorChanged);
 endDate.addEventListener("change", deviceSelectorChanged);
 
-//Inventia MT testing https://gis.edc.hr/imagisth/threport/mt_flow_test
-function inventia() {
-  console.log("Inventia test");
-
-  fetch("https://gis.edc.hr/imagisth/threport/mt_flow_test")
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data)
-      tbodyPressure.innerHTML = "";
-      let report = "Protok l/s\n";
-      tbodyFlow.innerHTML = "";
-      const startUnixDate = moment(startDate.value).unix();
-      const endUnixDate = moment(endDate.value).unix();
-      for (const i of data) {
-        if (i.date >= startUnixDate && i.date <= endUnixDate) {
-          const timeString = moment.unix(i.date).format("L LT");
-          tbodyFlow.appendChild(
-            elt("tr", {}, elt("td", {}, timeString), elt("td", {}, i.flow + ""))
-          );
-        }
-      }
-    });
-
-}
