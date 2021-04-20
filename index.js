@@ -8,7 +8,7 @@ const header = elt(
 );
 document.body.appendChild(header);
 const startDate = elt("input", { type: "datetime-local" });
-const deviceSelector = elt("select", {});
+const deviceSelector = elt("select", { disabled: true });
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
