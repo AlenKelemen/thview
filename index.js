@@ -63,53 +63,58 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
 const deviceSelectorChanged = () => {
   const deviceId = deviceSelector.value;
   fetch(
-    "https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId
+    "https://gis.edc.hr/imagisth/threport/pressure_th_mt?device_id=eq." +
+      deviceId
   )
     .then((response) => response.json())
     .then((data) => {
       let report = "Tlak bar\n";
       tbodyPressure.innerHTML = "";
-      const startUnixDate = moment(startDate.value).unix();
-      const endUnixDate = moment(endDate.value).unix();
+
       for (const i of data) {
-        if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
-          const timeString = moment.unix(i.date_part).format("L LT");
-          report = report + timeString + ";" + i.pressure + "\n";
+        if (
+          moment(i.date_taken) >= moment(startDate.value) &&
+          moment(i.date_taken) <= moment(endDate.value)
+        ) {
+          //console.log(i.date_taken, i.pressure);
           tbodyPressure.appendChild(
             elt(
               "tr",
               {},
-              elt("td", {}, timeString),
+              elt("td", {}, moment(i.date_taken).format("L LT")),
               elt("td", {}, i.pressure + "")
             )
           );
         }
       }
-      //console.log(report);
     });
-  fetch("https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." + deviceId)
+  fetch(
+    "https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." +
+      deviceId
+  )
     .then((response) => response.json())
     .then((data) => {
       data.shift();
-      console.log(data)
       let report = "Protok l/s\n";
       tbodyFlow.innerHTML = "";
-      const startUnixDate = moment(startDate.value).unix();
-      const endUnixDate = moment(endDate.value).unix();
-
-      
-     /*  for (const i of data) {
-        if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
-          const timeString = moment.unix(i.date_part).format("L LT");
-          tbodyFlow.appendChild(
-            elt("tr", {}, elt("td", {}, timeString), elt("td", {}, i.flow + ""))
-          );
+      for (let i = 0; i < data.length; i += 2) {
+        if (i > 1) {
+          if (
+            moment(data[i - 2].date_taken) >= moment(startDate.value) &&
+            moment(data[i].date_taken) <= moment(endDate.value)
+          ) {
+            let t = moment(data[i].date_taken).format("L LT");
+            let f = (((data[i].m3 - data[i - 2].m3) * 4) / 3.6).toFixed(2);
+            //console.log(t, f);
+            tbodyFlow.appendChild(
+              elt("tr", {}, elt("td", {}, t), elt("td", {}, f + ""))
+            );
+          }
         }
-      } */
+      }
     });
 };
 
 deviceSelector.addEventListener("change", deviceSelectorChanged);
 startDate.addEventListener("change", deviceSelectorChanged);
 endDate.addEventListener("change", deviceSelectorChanged);
-

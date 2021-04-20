@@ -5894,13 +5894,11 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2").then(function 
 
 var deviceSelectorChanged = function deviceSelectorChanged() {
   var deviceId = deviceSelector.value;
-  fetch("https://gis.edc.hr/imagisth/threport/pressure_th?device_id=eq." + deviceId).then(function (response) {
+  fetch("https://gis.edc.hr/imagisth/threport/pressure_th_mt?device_id=eq." + deviceId).then(function (response) {
     return response.json();
   }).then(function (data) {
     var report = "Tlak bar\n";
     tbodyPressure.innerHTML = "";
-    var startUnixDate = (0, _moment.default)(startDate.value).unix();
-    var endUnixDate = (0, _moment.default)(endDate.value).unix();
 
     var _iterator2 = _createForOfIteratorHelper(data),
         _step2;
@@ -5909,14 +5907,11 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
         var i = _step2.value;
 
-        if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
-          var timeString = _moment.default.unix(i.date_part).format("L LT");
-
-          report = report + timeString + ";" + i.pressure + "\n";
-          tbodyPressure.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.pressure + "")));
+        if ((0, _moment.default)(i.date_taken) >= (0, _moment.default)(startDate.value) && (0, _moment.default)(i.date_taken) <= (0, _moment.default)(endDate.value)) {
+          //console.log(i.date_taken, i.pressure);
+          tbodyPressure.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, (0, _moment.default)(i.date_taken).format("L LT")), (0, _util.elt)("td", {}, i.pressure + "")));
         }
-      } //console.log(report);
-
+      }
     } catch (err) {
       _iterator2.e(err);
     } finally {
@@ -5927,19 +5922,19 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
     return response.json();
   }).then(function (data) {
     data.shift();
-    console.log(data);
     var report = "Protok l/s\n";
     tbodyFlow.innerHTML = "";
-    var startUnixDate = (0, _moment.default)(startDate.value).unix();
-    var endUnixDate = (0, _moment.default)(endDate.value).unix();
-    /*  for (const i of data) {
-       if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
-         const timeString = moment.unix(i.date_part).format("L LT");
-         tbodyFlow.appendChild(
-           elt("tr", {}, elt("td", {}, timeString), elt("td", {}, i.flow + ""))
-         );
-       }
-     } */
+
+    for (var i = 0; i < data.length; i += 2) {
+      if (i > 1) {
+        if ((0, _moment.default)(data[i - 2].date_taken) >= (0, _moment.default)(startDate.value) && (0, _moment.default)(data[i].date_taken) <= (0, _moment.default)(endDate.value)) {
+          var t = (0, _moment.default)(data[i].date_taken).format("L LT");
+          var f = ((data[i].m3 - data[i - 2].m3) * 4 / 3.6).toFixed(2); //console.log(t, f);
+
+          tbodyFlow.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, t), (0, _util.elt)("td", {}, f + "")));
+        }
+      }
+    }
   });
 };
 
@@ -5974,7 +5969,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59826" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61114" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
