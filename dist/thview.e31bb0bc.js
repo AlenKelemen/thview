@@ -5915,41 +5915,31 @@ var deviceSelectorChanged = function deviceSelectorChanged() {
           report = report + timeString + ";" + i.pressure + "\n";
           tbodyPressure.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.pressure + "")));
         }
-      }
+      } //console.log(report);
+
     } catch (err) {
       _iterator2.e(err);
     } finally {
       _iterator2.f();
     }
-
-    console.log(report);
   });
-  fetch("https://gis.edc.hr/imagisth/threport/flow_th?device_id=eq." + deviceId).then(function (response) {
+  fetch("https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." + deviceId).then(function (response) {
     return response.json();
   }).then(function (data) {
+    data.shift();
+    console.log(data);
     var report = "Protok l/s\n";
     tbodyFlow.innerHTML = "";
     var startUnixDate = (0, _moment.default)(startDate.value).unix();
     var endUnixDate = (0, _moment.default)(endDate.value).unix();
-
-    var _iterator3 = _createForOfIteratorHelper(data),
-        _step3;
-
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var i = _step3.value;
-
-        if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
-          var timeString = _moment.default.unix(i.date_part).format("L LT");
-
-          tbodyFlow.appendChild((0, _util.elt)("tr", {}, (0, _util.elt)("td", {}, timeString), (0, _util.elt)("td", {}, i.flow + "")));
-        }
-      }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
-    }
+    /*  for (const i of data) {
+       if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
+         const timeString = moment.unix(i.date_part).format("L LT");
+         tbodyFlow.appendChild(
+           elt("tr", {}, elt("td", {}, timeString), elt("td", {}, i.flow + ""))
+         );
+       }
+     } */
   });
 };
 
@@ -5984,7 +5974,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58955" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59826" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

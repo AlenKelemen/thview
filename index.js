@@ -85,23 +85,27 @@ const deviceSelectorChanged = () => {
           );
         }
       }
-      console.log(report);
+      //console.log(report);
     });
-  fetch("https://gis.edc.hr/imagisth/threport/flow_th?device_id=eq." + deviceId)
+  fetch("https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." + deviceId)
     .then((response) => response.json())
     .then((data) => {
+      data.shift();
+      console.log(data)
       let report = "Protok l/s\n";
       tbodyFlow.innerHTML = "";
       const startUnixDate = moment(startDate.value).unix();
       const endUnixDate = moment(endDate.value).unix();
-      for (const i of data) {
+
+      
+     /*  for (const i of data) {
         if (i.date_part >= startUnixDate && i.date_part <= endUnixDate) {
           const timeString = moment.unix(i.date_part).format("L LT");
           tbodyFlow.appendChild(
             elt("tr", {}, elt("td", {}, timeString), elt("td", {}, i.flow + ""))
           );
         }
-      }
+      } */
     });
 };
 
