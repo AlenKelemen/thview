@@ -16,6 +16,8 @@ const deviceSelector = elt(
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
+const report = elt('p',{},'');
+const download = elt('span',{},elt('a',{href:'*'},'4e5ghwrtezh'));
 const tbody = elt("tbody", {});
 const tbl = elt(
   "table",
@@ -43,6 +45,8 @@ const fielset = elt(
   startDate,
   elt("label", {}, "Završni datum i vrijeme"),
   endDate,
+  report,
+  download,
   tbl
 );
 const form = elt("form", {}, fielset);
@@ -62,12 +66,14 @@ fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
 */
 
 deviceSelectorChanged();
-function deviceSelectorChanged(){
+function deviceSelectorChanged() {
   const pressurePromise = fetch(
-    "https://gis.edc.hr/imagisth/threport/pressure_th_mt?device_id=eq." + deviceId
+    "https://gis.edc.hr/imagisth/threport/pressure_th_mt?device_id=eq." +
+      deviceId
   );
   const flowPromise = fetch(
-    "https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." + deviceId
+    "https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." +
+      deviceId
   );
   Promise.all([pressurePromise, flowPromise]).then((r) => {
     Promise.all([r[0].json(), r[1].json()]).then((r) => {
@@ -95,42 +101,58 @@ function deviceSelectorChanged(){
         };
       }
       ts[0].flow = ts[1].flow; //!fake! ts[0].flow
-      console.log(period(ts));
-      startDate.addEventListener("change", evt => paint(period(ts)));
-      endDate.addEventListener("change", evt => paint(period(ts)));
-      paint(period(ts));
+      //console.log(period(ts));
+      startDate.addEventListener("change", (evt) => {
+        const p = period(ts);
+        paint(p);
+        console.log(p)
+      });
+      endDate.addEventListener("change", (evt) => {
+        const p = period(ts);
+        paint(p);
+        console.log(p)
+      });
+      const p = period(ts);
+      paint(p);
+      console.log(p)
     });
   });
 }
-function paint(val) {
+function paint(r) {
   //paint values to html table
-  tbody.innerHTML ='';
-  for (const value of val) {
-   if(value){
-    tbody.appendChild(
-      elt(
-        "tr",
-        {},
-        elt("td", {}, value.timestamp.format("DD.MM.YYYY")),
-        elt("td", {}, value.timestamp.format("HH:mm:ss")),
-        elt("td", {}, value.pressure.toFixed(2)),
-        elt("td", {}, value.flow.toFixed(2))
-      )
-    );
-   } 
+  tbody.innerHTML = "";
+  for (const value of r.values) {
+    if (value) {
+      tbody.appendChild(
+        elt(
+          "tr",
+          {},
+          elt("td", {}, value.timestamp.format("DD.MM.YYYY")),
+          elt("td", {}, value.timestamp.format("HH:mm:ss")),
+          elt("td", {}, value.pressure.toFixed(2)),
+          elt("td", {}, value.flow.toFixed(2))
+        )
+      );
+    }
   }
 }
 function period(val) {
   //return values inside period of time
-  const r = [];
-  for (const value of val) {
-    if (
-      value.timestamp > moment(startDate.value) &&
-      value.timestamp < moment(endDate.value)
-    ) {
-      r.push(value);
+  const r = {values:[],report:''};
+  if( moment(startDate.value) >=  moment(endDate.value)){
+    r.report = 'Početni datum i vrijeme moraju biti ranije.'
+  }else{
+    for (const value of val) {
+      if (
+        value.timestamp > moment(startDate.value) &&
+        value.timestamp < moment(endDate.value)
+      ) {
+        r.values.push(value);
+      }
     }
+    r.report = `Nađeno je ${r.values.length} mjerenja.`
   }
+  
+  report.innerHTML = r.report
   return r;
 }
-
