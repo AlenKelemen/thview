@@ -48,12 +48,60 @@ const fielset = elt(
 const form = elt("form", {}, fielset);
 document.body.appendChild(form);
 const deviceId = deviceSelector.value;
-const pressurePromise = fetch(
-  "https://gis.edc.hr/imagisth/threport/pressure_th_mt?device_id=eq." + deviceId
-);
-const flowPromise = fetch(
-  "https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." + deviceId
-);
+
+/* Device selector options
+fetch("https://gis.edc.hr/imagisth/threport/device?info_id=eq.2")
+  .then((response) => response.json())
+  .then((data) => {
+    for (const i of data) {
+      const o = new Option(i.device_name, i.device_id);
+      deviceSelector.options.add(o);
+    }
+  });
+  deviceSelector.addEventListener("change", evt => deviceSelectorChanged())
+*/
+
+deviceSelectorChanged();
+function deviceSelectorChanged(){
+  const pressurePromise = fetch(
+    "https://gis.edc.hr/imagisth/threport/pressure_th_mt?device_id=eq." + deviceId
+  );
+  const flowPromise = fetch(
+    "https://gis.edc.hr/imagisth/threport/flow_th_mt_m3?device_id=eq." + deviceId
+  );
+  Promise.all([pressurePromise, flowPromise]).then((r) => {
+    Promise.all([r[0].json(), r[1].json()]).then((r) => {
+      const ps = r[0];
+      const fs = r[1];
+      const t = [],
+        ts = [];
+      for (const [index, value] of ps.entries()) {
+        delete value.device_id;
+        // skip first flow item
+        value.flow =
+          index === 0
+            ? null
+            : fs.find((x) => x.date_taken === value.date_taken).m3;
+        //local date
+        value.date_taken = moment(value.date_taken).local();
+        t.push(value);
+      }
+      //recalculate flow
+      for (let i = 1; i < t.length; i++) {
+        ts[i - 1] = {
+          timestamp: t[i].date_taken,
+          pressure: t[i].pressure,
+          flow: ((t[i].flow - t[i - 1].flow) * 4) / 3.6,
+        };
+      }
+      ts[0].flow = ts[1].flow; //!fake! ts[0].flow
+      console.log(period(ts));
+      startDate.addEventListener("change", evt => paint(period(ts)));
+      endDate.addEventListener("change", evt => paint(period(ts)));
+      paint(period(ts));
+    });
+  });
+}
 function paint(val) {
   //paint values to html table
   tbody.innerHTML ='';
@@ -85,35 +133,4 @@ function period(val) {
   }
   return r;
 }
-Promise.all([pressurePromise, flowPromise]).then((r) => {
-  Promise.all([r[0].json(), r[1].json()]).then((r) => {
-    const ps = r[0];
-    const fs = r[1];
-    const t = [],
-      ts = [];
-    for (const [index, value] of ps.entries()) {
-      delete value.device_id;
-      // skip first flow item
-      value.flow =
-        index === 0
-          ? null
-          : fs.find((x) => x.date_taken === value.date_taken).m3;
-      //local date
-      value.date_taken = moment(value.date_taken).local();
-      t.push(value);
-    }
-    //recalculate flow
-    for (let i = 1; i < t.length; i++) {
-      ts[i - 1] = {
-        timestamp: t[i].date_taken,
-        pressure: t[i].pressure,
-        flow: ((t[i].flow - t[i - 1].flow) * 4) / 3.6,
-      };
-    }
-    ts[0].flow = ts[1].flow; //!fake! ts[0].flow
-    console.log(period(ts));
-    startDate.addEventListener("change", evt => paint(period(ts)));
-    endDate.addEventListener("change", evt => paint(period(ts)));
-    paint(period(ts));
-  });
-});
+
