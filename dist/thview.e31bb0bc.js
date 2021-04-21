@@ -5867,10 +5867,14 @@ var endDate = (0, _util.elt)("input", {
   type: "datetime-local"
 });
 endDate.value = (0, _moment.default)().format("YYYY-MM-DDTHH:mm");
-var report = (0, _util.elt)('p', {}, '');
-var download = (0, _util.elt)('span', {}, (0, _util.elt)('a', {
-  href: '*'
-}, '4e5ghwrtezh'));
+var report = (0, _util.elt)("p", {
+  style: 'margin-bottom:0'
+}, "");
+var download = (0, _util.elt)('a', {
+  style: 'display:inline-block',
+  href: 'data:text/plain;charset=utf-8,' + encodeURIComponent(''),
+  download: 'Mjerenja.csv'
+}, 'preuzmi');
 var tbody = (0, _util.elt)("tbody", {});
 var tbl = (0, _util.elt)("table", {}, //suppress 100%
 (0, _util.elt)("thead", {}, (0, _util.elt)("tr", {}, (0, _util.elt)("th", {}, "Datum"), (0, _util.elt)("th", {}, "Vrijeme"), (0, _util.elt)("th", {}, "Tlak bar"), (0, _util.elt)("th", {}, "Protok l/s"))), tbody);
@@ -5956,6 +5960,7 @@ function deviceSelectorChanged() {
       });
       var p = period(ts);
       paint(p);
+      download.href = download.href + encodeURIComponent('text');
       console.log(p);
     });
   });
@@ -5987,11 +5992,11 @@ function period(val) {
   //return values inside period of time
   var r = {
     values: [],
-    report: ''
+    report: ""
   };
 
   if ((0, _moment.default)(startDate.value) >= (0, _moment.default)(endDate.value)) {
-    r.report = 'Početni datum i vrijeme moraju biti ranije.';
+    r.report = "Početni datum i vrijeme moraju biti ranije.";
   } else {
     var _iterator3 = _createForOfIteratorHelper(val),
         _step3;
@@ -6044,7 +6049,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59839" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55298" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

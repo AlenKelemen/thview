@@ -16,8 +16,8 @@ const deviceSelector = elt(
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
-const report = elt('p',{},'');
-const download = elt('span',{},elt('a',{href:'*'},'4e5ghwrtezh'));
+const report = elt("p", {style:'margin-bottom:0'}, "");
+const download =elt('a',{style:'display:inline-block', href:'data:text/plain;charset=utf-8,' + encodeURIComponent(''), download:'Mjerenja.csv'},'preuzmi')
 const tbody = elt("tbody", {});
 const tbl = elt(
   "table",
@@ -105,16 +105,17 @@ function deviceSelectorChanged() {
       startDate.addEventListener("change", (evt) => {
         const p = period(ts);
         paint(p);
-        console.log(p)
+        console.log(p);
       });
       endDate.addEventListener("change", (evt) => {
         const p = period(ts);
         paint(p);
-        console.log(p)
+        console.log(p);
       });
       const p = period(ts);
       paint(p);
-      console.log(p)
+      download.href = download.href + encodeURIComponent('text')
+      console.log(p);
     });
   });
 }
@@ -138,10 +139,10 @@ function paint(r) {
 }
 function period(val) {
   //return values inside period of time
-  const r = {values:[],report:''};
-  if( moment(startDate.value) >=  moment(endDate.value)){
-    r.report = 'Početni datum i vrijeme moraju biti ranije.'
-  }else{
+  const r = { values: [], report: "" };
+  if (moment(startDate.value) >= moment(endDate.value)) {
+    r.report = "Početni datum i vrijeme moraju biti ranije.";
+  } else {
     for (const value of val) {
       if (
         value.timestamp > moment(startDate.value) &&
@@ -150,9 +151,9 @@ function period(val) {
         r.values.push(value);
       }
     }
-    r.report = `Nađeno je ${r.values.length} mjerenja.`
+    r.report = `Nađeno je ${r.values.length} mjerenja.`;
   }
-  
-  report.innerHTML = r.report
+
+  report.innerHTML = r.report;
   return r;
 }
