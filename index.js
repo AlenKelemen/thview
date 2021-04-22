@@ -16,8 +16,16 @@ const deviceSelector = elt(
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
-const report = elt("p", {style:'margin-bottom:0'}, "");
-const download =elt('a',{style:'display:inline-block', href:'data:text/plain;charset=utf-8,' + encodeURIComponent(''), download:'Mjerenja.csv'},'preuzmi')
+const report = elt("p", { style: "margin-bottom:0" }, "");
+const download = elt(
+  "a",
+  {
+    style: "display:inline-block",
+    href: "data:text/plain;charset=utf-8," + encodeURIComponent(""),
+    download: "Mjerenja.csv",
+  },
+  "preuzmi"
+);
 const tbody = elt("tbody", {});
 const tbl = elt(
   "table",
@@ -100,7 +108,7 @@ function deviceSelectorChanged() {
           flow: ((t[i].flow - t[i - 1].flow) * 4) / 3.6,
         };
       }
-      ts[0].flow = ts[1].flow; //!fake! ts[0].flow
+      ts[0].flow = ts[1].flow; //!fake! ts[0].flow to be removed from db
       //console.log(period(ts));
       startDate.addEventListener("change", (evt) => {
         const p = period(ts);
@@ -114,10 +122,24 @@ function deviceSelectorChanged() {
       });
       const p = period(ts);
       paint(p);
-      download.href = download.href + encodeURIComponent('text')
-      console.log(p);
+      download.href = download.href + encodeURIComponent(csv(p));
+      
     });
   });
+}
+function csv(r) {
+  //values as csv text
+  let s = "Datum;Vrijeme;Tlak bar;Protok l/s\n";
+  for (const value of r.values) {
+    if (value) {
+      let pstring = value.pressure.toFixed(2);
+      pstring = pstring.replace('.',',');
+      let fstring = value.flow.toFixed(2);
+      fstring= fstring.replace('.',',');
+      s += `${value.timestamp.format("DD.MM.YYYY")};${value.timestamp.format("HH:mm:ss")};${pstring};${fstring}\n`;
+    }
+  }
+  return s;
 }
 function paint(r) {
   //paint values to html table
