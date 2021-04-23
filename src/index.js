@@ -1,4 +1,4 @@
-import { elt } from "./util";
+import { elt } from "../util";
 import moment from "moment";
 
 const header = elt(
@@ -85,6 +85,7 @@ function deviceSelectorChanged() {
   );
   Promise.all([pressurePromise, flowPromise]).then((r) => {
     Promise.all([r[0].json(), r[1].json()]).then((r) => {
+      console.log(r)
       const ps = r[0];
       const fs = r[1];
       const t = [],
@@ -97,8 +98,8 @@ function deviceSelectorChanged() {
             ? null
             : fs.find((x) => x.date_taken === value.date_taken).m3;
         //local date
-        value.date_taken = moment(value.date_taken).add(2, 'hours');//.local();
-        console.log(value.date_taken)
+        value.date_taken = moment(value.date_taken).add(2,'hour')//!Needs correction on server side!
+        
         t.push(value);
       }
       //recalculate flow
