@@ -85,7 +85,6 @@ function deviceSelectorChanged() {
   );
   Promise.all([pressurePromise, flowPromise]).then((r) => {
     Promise.all([r[0].json(), r[1].json()]).then((r) => {
-      console.log(r)
       const ps = r[0];
       const fs = r[1];
       const t = [],
