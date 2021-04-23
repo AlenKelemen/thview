@@ -16,20 +16,20 @@ const deviceSelector = elt(
 startDate.value = moment().subtract(1, "days").format("YYYY-MM-DDTHH:mm");
 const endDate = elt("input", { type: "datetime-local" });
 endDate.value = moment().format("YYYY-MM-DDTHH:mm");
-const report = elt("p", { style: "margin-bottom:0" }, "");
+const report = elt("p", { style: "margin-bottom:0" }, "Preuzimanje mjerenja...");//
 const download = elt(
   "a",
   {
-    style: "display:inline-block",
+    style: "display:inline-block;display:none",
     href: "data:text/plain;charset=utf-8," + encodeURIComponent(""),
     download: "Mjerenja.csv",
   },
-  "preuzmi"
+  "Preuzmi mjerenja lokalno"
 );
 const tbody = elt("tbody", {});
 const tbl = elt(
   "table",
-  {}, //suppress 100%
+  {style:'display:none'}, //
   elt(
     "thead",
     {},
@@ -85,6 +85,8 @@ function deviceSelectorChanged() {
   );
   Promise.all([pressurePromise, flowPromise]).then((r) => {
     Promise.all([r[0].json(), r[1].json()]).then((r) => {
+      tbl.style.display ='table';
+      download.style.display='block';
       const ps = r[0];
       const fs = r[1];
       const t = [],
@@ -114,12 +116,12 @@ function deviceSelectorChanged() {
       startDate.addEventListener("change", (evt) => {
         const p = period(ts);
         paint(p);
-        console.log(p);
+        //console.log(p);
       });
       endDate.addEventListener("change", (evt) => {
         const p = period(ts);
         paint(p);
-        console.log(p);
+        //console.log(p);
       });
       const p = period(ts);
       paint(p);
