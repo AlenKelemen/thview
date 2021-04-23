@@ -97,7 +97,8 @@ function deviceSelectorChanged() {
             ? null
             : fs.find((x) => x.date_taken === value.date_taken).m3;
         //local date
-        value.date_taken = moment(value.date_taken).local();
+        value.date_taken = moment(value.date_taken).add(2, 'hours');//.local();
+        console.log(value.date_taken)
         t.push(value);
       }
       //recalculate flow
