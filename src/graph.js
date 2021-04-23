@@ -7,5 +7,5 @@ export function graph(){
     return g;
 }
 export function graphAddData(data){
-
+//
 }
