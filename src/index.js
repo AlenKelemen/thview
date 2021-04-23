@@ -1,5 +1,6 @@
 import { elt } from "./util";
 import moment from "moment";
+import {graph} from "./graph";
 
 const header = elt(
   "h1",
@@ -26,6 +27,8 @@ const download = elt(
   },
   "Preuzmi mjerenja lokalno"
 );
+const graphData = graph();
+graphData.style.display = 'none';
 const tbody = elt("tbody", {});
 const tbl = elt(
   "table",
@@ -55,6 +58,7 @@ const fielset = elt(
   endDate,
   report,
   download,
+  graphData,
   tbl
 );
 const form = elt("form", {}, fielset);
@@ -87,6 +91,7 @@ function deviceSelectorChanged() {
     Promise.all([r[0].json(), r[1].json()]).then((r) => {
       tbl.style.display ='table';
       download.style.display='block';
+      graphData.style.display='block';
       const ps = r[0];
       const fs = r[1];
       const t = [],
