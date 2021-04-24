@@ -4642,20 +4642,17 @@ _parcelHelpers.defineInteropFlag(exports);
 _parcelHelpers.export(exports, "graph", function () {
   return graph;
 });
-_parcelHelpers.export(exports, "graphAddData", function () {
-  return graphAddData;
-});
 require("chart.js");
 var _util = require("./util");
 function graph() {
-  const g = _util.elt("canvas", {
+  const canvas = _util.elt("canvas", {
     height: "100%",
     width: "100%"
   });
-  const ctx = g.getContext("2d");
-  return g;
+  const ctx = canvas.getContext("2d");
+  // const graph = new Chart();
+  return canvas;
 }
-function graphAddData(data) {}
 
 },{"./util":"7eZGY","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","chart.js":"22Owl"}],"22Owl":[function(require,module,exports) {
 var define;
