@@ -516,9 +516,9 @@ function deviceSelectorChanged() {
         // skip first flow item
         value.flow = index === 0 ? null : fs.find(x => x.date_taken === value.date_taken).m3;
         // local date
-        value.date_taken = _momentDefault.default(value.date_taken);
-        // .add(2,'hour')//!
-        console.log(_momentDefault.default().format('YYYY-MM-DD HH:mm'));
+        value.date_taken = _momentDefault.default.utc(value.date_taken);
+        // !
+        console.log(_momentDefault.default().local().format('YYYY-MM-DD HH:mm'));
         t.push(value);
       }
       // recalculate flow
@@ -531,7 +531,7 @@ function deviceSelectorChanged() {
       }
       ts[0].flow = ts[1].flow;
       // !fake! ts[0].flow to be removed from db
-      // console.log(period(ts));
+      console.log(period(ts));
       startDate.addEventListener("change", evt => {
         const p = period(ts);
         paint(p);
@@ -627,7 +627,6 @@ function graphIt(r) {
       t: value.timestamp,
       y: value.pressure
     });
-    console.log(graph.data);
   }
 }
 function csv(r) {
@@ -639,7 +638,7 @@ function csv(r) {
       pstring = pstring.replace('.', ',');
       let fstring = value.flow.toFixed(2);
       fstring = fstring.replace('.', ',');
-      s += `${value.timestamp.format("DD.MM.YYYY")};${value.timestamp.format("HH:mm:ss")};${pstring};${fstring}\n`;
+      s += `${value.timestamp.local().format("DD.MM.YYYY")};${value.timestamp.local().format("HH:mm:ss")};${pstring};${fstring}\n`;
     }
   }
   return s;
@@ -648,6 +647,7 @@ function paint(r) {
   // paint values to html table
   tbody.innerHTML = "";
   for (const value of r.values) {
+    console.log('zz', value.timestamp.format('HH'));
     if (value) {
       tbody.appendChild(_util.elt("tr", {}, _util.elt("td", {}, value.timestamp.format("DD.MM.YYYY")), _util.elt("td", {}, value.timestamp.format("HH:mm:ss")), _util.elt("td", {}, value.pressure.toFixed(2)), _util.elt("td", {}, value.flow.toFixed(2))));
     }
@@ -673,7 +673,7 @@ function period(val) {
   return r;
 }
 
-},{"./util":"7eZGY","moment":"5Hi32","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","chart.js":"22Owl"}],"7eZGY":[function(require,module,exports) {
+},{"./util":"7eZGY","moment":"5Hi32","chart.js":"22Owl","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"7eZGY":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 _parcelHelpers.export(exports, "elt", function () {

@@ -103,8 +103,8 @@ function deviceSelectorChanged() {
             ? null
             : fs.find((x) => x.date_taken === value.date_taken).m3;
         //local date
-        value.date_taken = moment(value.date_taken)//.add(2,'hour')//!
-        console.log(moment().format('YYYY-MM-DD HH:mm'))
+        value.date_taken = moment.utc(value.date_taken)//!
+        console.log(moment().local().format('YYYY-MM-DD HH:mm'))
         t.push(value);
       }
       //recalculate flow
@@ -114,10 +114,9 @@ function deviceSelectorChanged() {
           pressure: t[i].pressure,
           flow: ((t[i].flow - t[i - 1].flow) * 4) / 3.6,
         };
-        //console.log(t[i].flow,t[i-1].flow,(t[i].flow - t[i - 1].flow))
       }
       ts[0].flow = ts[1].flow; //!fake! ts[0].flow to be removed from db
-      //console.log(period(ts));
+      console.log(period(ts));
       startDate.addEventListener("change", (evt) => {
         const p = period(ts);
         paint(p);
@@ -224,7 +223,7 @@ function graphIt(r){
       t: value.timestamp,
       y: value.pressure,
     });
-    console.log(graph.data)
+    //console.log(graph.data)
   }
 }
 function csv(r) {
@@ -236,15 +235,17 @@ function csv(r) {
       pstring = pstring.replace('.',',');
       let fstring = value.flow.toFixed(2);
       fstring= fstring.replace('.',',');
-      s += `${value.timestamp.format("DD.MM.YYYY")};${value.timestamp.format("HH:mm:ss")};${pstring};${fstring}\n`;
+      s += `${value.timestamp.local().format("DD.MM.YYYY")};${value.timestamp.local().format("HH:mm:ss")};${pstring};${fstring}\n`;
     }
   }
   return s;
 }
 function paint(r) {
   //paint values to html table
+
   tbody.innerHTML = "";
   for (const value of r.values) {
+    console.log('zz',value.timestamp.format('HH'))
     if (value) {
       tbody.appendChild(
         elt(
