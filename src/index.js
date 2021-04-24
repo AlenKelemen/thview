@@ -1,6 +1,6 @@
 import { elt } from "./util";
 import moment from "moment";
-import {graph} from "./graph";
+import Chart from "chart.js";
 
 const header = elt(
   "h1",
@@ -25,10 +25,9 @@ const download = elt(
     href: "data:text/plain;charset=utf-8," + encodeURIComponent(""),
     download: "Mjerenja.csv",
   },
-  "Preuzmi mjerenja lokalno"
+  "Preuzmi..."
 );
-const graphData = graph();
-graphData.style.display = 'none';
+const canvas = elt("canvas", { height: "100%", width: "100%",style:'display:none' });
 const tbody = elt("tbody", {});
 const tbl = elt(
   "table",
@@ -58,7 +57,7 @@ const fielset = elt(
   endDate,
   report,
   download,
-  graphData,
+  canvas,
   tbl
 );
 const form = elt("form", {}, fielset);
@@ -91,7 +90,7 @@ function deviceSelectorChanged() {
     Promise.all([r[0].json(), r[1].json()]).then((r) => {
       tbl.style.display ='table';
       download.style.display='block';
-      graphData.style.display='block';
+      canvas.style.display='inline-block';
       const ps = r[0];
       const fs = r[1];
       const t = [],
@@ -104,8 +103,8 @@ function deviceSelectorChanged() {
             ? null
             : fs.find((x) => x.date_taken === value.date_taken).m3;
         //local date
-        value.date_taken = moment(value.date_taken).add(2,'hour')//!Needs correction on server side!
-        
+        value.date_taken = moment(value.date_taken)//.add(2,'hour')//!
+        console.log(moment().format('YYYY-MM-DD HH:mm'))
         t.push(value);
       }
       //recalculate flow
@@ -115,6 +114,7 @@ function deviceSelectorChanged() {
           pressure: t[i].pressure,
           flow: ((t[i].flow - t[i - 1].flow) * 4) / 3.6,
         };
+        //console.log(t[i].flow,t[i-1].flow,(t[i].flow - t[i - 1].flow))
       }
       ts[0].flow = ts[1].flow; //!fake! ts[0].flow to be removed from db
       //console.log(period(ts));
@@ -131,9 +131,101 @@ function deviceSelectorChanged() {
       const p = period(ts);
       paint(p);
       download.href = download.href + encodeURIComponent(csv(p));
+      graphIt(p)
       
     });
   });
+}
+function graphIt(r){
+  const ctx = canvas.getContext("2d");
+  const graph = new Chart(ctx, {
+    type: "line",
+    data: {
+      datasets: [
+        {
+          label: "tlak bar",
+          yAxisID: "Pressure",
+          fill: false,
+          backgroundColor: "white",
+          borderColor: "red",
+          borderWidth: 1,
+          radius: 0,
+          data: [],
+        },
+        {
+          label: "protok l/s",
+          yAxisID: "Flow",
+          fill: false,
+          backgroundColor: "white",
+          borderColor: "blue",
+          radius: 0,
+          data: [],
+        },
+      ],
+      options: {
+        title: {
+          display: true,
+          text: "Telemetrijski hidrant",
+        },
+        legend: {
+          display: true,
+          position: "bottom",
+          labels: {
+            fontColor: "#000080",
+            boxWidth: 20,
+          },
+        },
+        scales: {
+          xAxes: [
+            {
+              type: "time",
+              time: {
+                unit: "day",
+                displayFormats: {
+                  day: "MM:DD",
+                },
+              },
+            },
+          ],
+          yAxes: [
+            {
+              scaleLabel: {
+                display: true,
+                labelString: "bar",
+              },
+              id: "Pressure",
+              type: "linear",
+              position: "left",
+            },
+            {
+              scaleLabel: {
+                display: true,
+                labelString: "l/s",
+              },
+              id: "Flow",
+              type: "linear",
+              position: "right",
+              ticks: {
+                max: 0.5,
+                min: 0,
+              },
+            },
+          ],
+        },
+      },
+    },
+  });
+  graph.update();
+  graph.data.datasets.forEach((dataset) => {
+    dataset.data=[]
+  });
+  for (const value of r.values){
+    graph.data.datasets[0].data.push({
+      t: value.timestamp,
+      y: value.pressure,
+    });
+    console.log(graph.data)
+  }
 }
 function csv(r) {
   //values as csv text
@@ -165,6 +257,7 @@ function paint(r) {
         )
       );
     }
+
   }
 }
 function period(val) {

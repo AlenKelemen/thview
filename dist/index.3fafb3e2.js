@@ -446,7 +446,8 @@ var _util = require("./util");
 var _moment = require("moment");
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 var _momentDefault = _parcelHelpers.interopDefault(_moment);
-var _graph = require("./graph");
+var _chartJs = require("chart.js");
+var _chartJsDefault = _parcelHelpers.interopDefault(_chartJs);
 const header = _util.elt("h1", {
   style: "margin-top:0;margin-left:1rem"
 }, "Mjerenja na vodoopskrbnoj mreži");
@@ -470,9 +471,12 @@ const download = _util.elt("a", {
   style: "display:inline-block;display:none",
   href: "data:text/plain;charset=utf-8," + encodeURIComponent(""),
   download: "Mjerenja.csv"
-}, "Preuzmi mjerenja lokalno");
-const graphData = _graph.graph();
-graphData.style.display = 'none';
+}, "Preuzmi...");
+const canvas = _util.elt("canvas", {
+  height: "100%",
+  width: "100%",
+  style: 'display:none'
+});
 const tbody = _util.elt("tbody", {});
 const tbl = _util.elt("table", {
   style: 'display:none'
@@ -480,7 +484,7 @@ const tbl = _util.elt("table", {
 _util.elt("thead", {}, _util.elt("tr", {}, _util.elt("th", {}, "Datum"), _util.elt("th", {}, "Vrijeme"), _util.elt("th", {}, "Tlak bar"), _util.elt("th", {}, "Protok l/s"))), tbody);
 const fielset = _util.elt("fieldset", {
   style: "margin-left:1em"
-}, _util.elt("label", {}, "Odaberi uređaj"), deviceSelector, _util.elt("label", {}, "Početni datum i vrijeme"), startDate, _util.elt("label", {}, "Završni datum i vrijeme"), endDate, report, download, graphData, tbl);
+}, _util.elt("label", {}, "Odaberi uređaj"), deviceSelector, _util.elt("label", {}, "Početni datum i vrijeme"), startDate, _util.elt("label", {}, "Završni datum i vrijeme"), endDate, report, download, canvas, tbl);
 const form = _util.elt("form", {}, fielset);
 document.body.appendChild(form);
 const deviceId = deviceSelector.value;
@@ -503,7 +507,7 @@ function deviceSelectorChanged() {
     Promise.all([r[0].json(), r[1].json()]).then(r => {
       tbl.style.display = 'table';
       download.style.display = 'block';
-      graphData.style.display = 'block';
+      canvas.style.display = 'inline-block';
       const ps = r[0];
       const fs = r[1];
       const t = [], ts = [];
@@ -512,8 +516,9 @@ function deviceSelectorChanged() {
         // skip first flow item
         value.flow = index === 0 ? null : fs.find(x => x.date_taken === value.date_taken).m3;
         // local date
-        value.date_taken = _momentDefault.default(value.date_taken).add(2, 'hour');
-        // !Needs correction on server side!
+        value.date_taken = _momentDefault.default(value.date_taken);
+        // .add(2,'hour')//!
+        console.log(_momentDefault.default().format('YYYY-MM-DD HH:mm'));
         t.push(value);
       }
       // recalculate flow
@@ -538,8 +543,92 @@ function deviceSelectorChanged() {
       const p = period(ts);
       paint(p);
       download.href = download.href + encodeURIComponent(csv(p));
+      graphIt(p);
     });
   });
+}
+function graphIt(r) {
+  const ctx = canvas.getContext("2d");
+  const graph = new _chartJsDefault.default(ctx, {
+    type: "line",
+    data: {
+      datasets: [{
+        label: "tlak bar",
+        yAxisID: "Pressure",
+        fill: false,
+        backgroundColor: "white",
+        borderColor: "red",
+        borderWidth: 1,
+        radius: 0,
+        data: []
+      }, {
+        label: "protok l/s",
+        yAxisID: "Flow",
+        fill: false,
+        backgroundColor: "white",
+        borderColor: "blue",
+        radius: 0,
+        data: []
+      }],
+      options: {
+        title: {
+          display: true,
+          text: "Telemetrijski hidrant"
+        },
+        legend: {
+          display: true,
+          position: "bottom",
+          labels: {
+            fontColor: "#000080",
+            boxWidth: 20
+          }
+        },
+        scales: {
+          xAxes: [{
+            type: "time",
+            time: {
+              unit: "day",
+              displayFormats: {
+                day: "MM:DD"
+              }
+            }
+          }],
+          yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: "bar"
+            },
+            id: "Pressure",
+            type: "linear",
+            position: "left"
+          }, {
+            scaleLabel: {
+              display: true,
+              labelString: "l/s"
+            },
+            id: "Flow",
+            type: "linear",
+            position: "right",
+            ticks: {
+              max: 0.5,
+              min: 0
+            }
+          }]
+        }
+      }
+    }
+  });
+  graph.update();
+  graph.data.datasets.forEach(dataset => {
+    dataset.data = [];
+  });
+  for (const value of r.values) {
+    graph.data.datasets[0].data.push({
+      t: value.timestamp,
+      y: value.pressure
+    });
+    console.log(graph.data);
+  }
 }
 function csv(r) {
   // values as csv text
@@ -584,7 +673,7 @@ function period(val) {
   return r;
 }
 
-},{"./util":"7eZGY","moment":"5Hi32","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./graph":"4FjpL"}],"7eZGY":[function(require,module,exports) {
+},{"./util":"7eZGY","moment":"5Hi32","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","chart.js":"22Owl"}],"7eZGY":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 _parcelHelpers.export(exports, "elt", function () {
@@ -4636,25 +4725,7 @@ var define;
   return hooks;
 });
 
-},{}],"4FjpL":[function(require,module,exports) {
-var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
-_parcelHelpers.defineInteropFlag(exports);
-_parcelHelpers.export(exports, "graph", function () {
-  return graph;
-});
-require("chart.js");
-var _util = require("./util");
-function graph() {
-  const canvas = _util.elt("canvas", {
-    height: "100%",
-    width: "100%"
-  });
-  const ctx = canvas.getContext("2d");
-  // const graph = new Chart();
-  return canvas;
-}
-
-},{"./util":"7eZGY","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","chart.js":"22Owl"}],"22Owl":[function(require,module,exports) {
+},{}],"22Owl":[function(require,module,exports) {
 var define;
 /*!
 * Chart.js v3.1.1
